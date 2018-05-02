@@ -10,11 +10,11 @@ def loadAndFormatData(filename):
     return data
 
 
-dataLeftMost = loadAndFormatData('sonarLogLeftMost.txt')
-dataLeft = loadAndFormatData('sonarLogLeft.txt')
-dataRightMost = loadAndFormatData('sonarLogRightMost.txt')
-dataRight = loadAndFormatData('sonarLogRight.txt')
-dataMid = loadAndFormatData('sonarLogMid.txt')
+# dataLeftMost = loadAndFormatData('sonarLogLeftMost.txt')
+dataLeft = loadAndFormatData('sonarLogL.txt')
+# dataRightMost = loadAndFormatData('sonarLogRightMost.txt')
+dataRight = loadAndFormatData('sonarLogR.txt')
+dataMid = loadAndFormatData('sonarLogM.txt')
 
 
 
@@ -34,9 +34,9 @@ def removeOutliers(dataFrame):
     return result
 
 
-dataLeftMost = removeOutliers(dataLeftMost)
+# dataLeftMost = removeOutliers(dataLeftMost)
 dataLeft = removeOutliers(dataLeft)
-dataRightMost = removeOutliers(dataRightMost)
+# dataRightMost = removeOutliers(dataRightMost)
 dataRight = removeOutliers(dataRight)
 dataMid = removeOutliers(dataMid)
 
@@ -54,9 +54,9 @@ def movingAvg(dataSet, winSize=5):
     return ma_data
 
 
-dataLeftMostMA = movingAvg(dataLeftMost,  winSize = 5)
+# dataLeftMostMA = movingAvg(dataLeftMost,  winSize = 5)
 dataLeftMA = movingAvg(dataLeft, winSize = 5)
-dataRightMostMA = movingAvg(dataRightMost, winSize = 5)
+# dataRightMostMA = movingAvg(dataRightMost, winSize = 5)
 dataRightMA = movingAvg(dataRight, winSize = 5)
 dataMidMA = movingAvg(dataMid, winSize = 5)
 
@@ -74,7 +74,7 @@ def labelAndCombineData(df_list):
     
     return pd.concat(data_list, axis=0), pd.concat(label_list, axis=0)
 
-com_data, com_label = labelAndCombineData([pd.concat([dataLeftMostMA, dataLeftMA], axis=0), pd.concat([dataRightMostMA, dataRightMA], axis=0), dataMid])
+com_data, com_label = labelAndCombineData([dataLeftMA, dataRightMA, dataMid])
 
 
 
@@ -122,7 +122,7 @@ def normalizeTestDF(dataFrame, params, mode="std"):
 from sklearn import linear_model
 from sklearn import metrics, cross_validation
 print("start training")
-logreg = linear_model.LogisticRegression(C=1e5)
+logreg = linear_model.LogisticRegression(C=1e1)
 logreg.fit(norm_data, com_label)
 predicted = cross_validation.cross_val_predict(logreg, norm_data, com_label, cv=10)
 
