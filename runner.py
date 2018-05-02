@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 
 def loadAndFormatData(filename):
+    print("load and format data ...")
     data = pd.read_csv(filename, sep=", ", header=None)
     data.columns = ["x1", "x2", "x3", "x4","x5","x6","x7","x8","x9","x10","x11","x12","x13","x14","x15","x16"]
     data.drop(["x3", "x7", "x8", "x9", "x10", "x11", "x12", "x13", "x14", "x15", "x16"], axis=1, inplace=True)
@@ -18,6 +19,7 @@ dataMid = loadAndFormatData('sonarLogMid.txt')
 
 
 def removeOutliers(dataFrame):
+    print("remove outliers")
     d_mean = dataFrame.mean()
     d_std = dataFrame.std()
     outlier_index = []
@@ -41,6 +43,7 @@ dataMid = removeOutliers(dataMid)
 
 
 def movingAvg(dataSet, winSize=5):
+    print("moving average")
     ma_data = dataSet.copy()
     for ind, col in enumerate(dataSet):
         ma_data[col] = dataSet[col].rolling(window=winSize).mean()
@@ -60,6 +63,7 @@ dataMidMA = movingAvg(dataMid, winSize = 5)
 
 
 def labelAndCombineData(df_list):
+    print("labelAndCombineData")
     data_list = []
     label_list = []
     for ind, df in enumerate(df_list):
@@ -76,6 +80,7 @@ com_data, com_label = labelAndCombineData([pd.concat([dataLeftMostMA, dataLeftMA
 
 # feature normalization
 def normalizeTrainDF(dataFrame, mode="std"):
+    print("normalize train df")
     result = dataFrame.copy()    
     params = pd.DataFrame(index=range(len(dataFrame.columns)),columns = ["std", "mean", "min", "max"])
     
@@ -99,9 +104,11 @@ print(norm_data.head(), params["std"][0])
 
 
 def normalizeTestDF(dataFrame, params, mode="std"):
+    print("normalize test df")
     result = dataFrame.copy()    
     
     for ind, feature_name in enumerate(dataFrame.columns):        
+        #print(ind, feature_name, dataFrame[feature_name], params["mean"][ind])
         if mode == "std":
             result[feature_name] = ((dataFrame[feature_name] - params["mean"][ind]) / params["std"][ind]) if params["std"][ind] else 0
         elif mode == "mean":
@@ -114,33 +121,44 @@ def normalizeTestDF(dataFrame, params, mode="std"):
 
 from sklearn import linear_model
 from sklearn import metrics, cross_validation
-
+print("start training")
 logreg = linear_model.LogisticRegression(C=1e5)
 logreg.fit(norm_data, com_label)
 predicted = cross_validation.cross_val_predict(logreg, norm_data, com_label, cv=10)
 
 
-def makePredction(filename):
-    data = loadAndFormatData(filename)    
-    dataMA = movingAvg(data,  winSize = 5)
-    dataNorm = normalizeTestDF(dataMA, params)
-    with open("/sdcard/DCIM/logs/prediction.txt", "a") as myfile:
-        for i in range(dataNorm.shape[0]):
-            current = dataNorm.iloc[i].reshape(1, -1)
-#             print(current, str(logreg.predict(current)[0]))
-            myfile.write(str(logreg.predict(current)[0]))
+def makePrediction(dirname, filename):
+    print("making prediction")
+    open(dirname+'prediction.lock', 'a').close()
+    try:
+        data = loadAndFormatData(dirname+filename)    
+        dataMA = movingAvg(data,  winSize = 5)
+        dataNorm = normalizeTestDF(dataMA, params)
+        with open(dirname+"prediction.txt", "a") as myfile:
+            for i in range(dataNorm.shape[0]):
+                current = dataNorm.iloc[i].reshape(1, -1)
+                #print(current, str(logreg.predict(current)[0]))
+                myfile.write(str(logreg.predict(current)[0]))
+    except (OSError, IOError, pd.io.common.EmptyDataError) as e:
+        print(e)
+    finally:
+        #os.remove('/sdcard/DCIM/logs/prediction.txt')
+        if os.path.exists(dirname+filename):
+            os.remove(dirname+filename)
+        if os.path.exists(dirname+'prediction.lock'):
+            os.remove(dirname+'prediction.lock')
     
-
 
 import os.path
 import time
 
 while True:
-    if not os.path.exists('/sdcard/DCIM/logs/sonarLog.txt'):
+    print(os.path.exists('/sdcard/DCIM/logs/sonarLog.txt'), os.path.exists('/sdcard/DCIM/logs/sonarLog.lock'))
+    if os.path.exists('/sdcard/DCIM/logs/sonarLog.txt') and not(os.path.exists('/sdcard/DCIM/logs/sonarLog.lock')):
+        makePrediction('/sdcard/DCIM/logs/', 'sonarLog.txt')
+    else:
         print("file not found ~~~")
         time.sleep(0.1)
-    else:
-        makePredction('/sdcard/DCIM/logs/sonarLog.txt')
-        os.remove('/sdcard/DCIM/logs/sonarLog.txt')
+        
 
 
