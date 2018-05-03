@@ -5,8 +5,8 @@ import numpy as np
 def loadAndFormatData(filename):
     print("load and format data ...")
     data = pd.read_csv(filename, sep=", ", header=None)
-    data.columns = ["x1", "x2", "x3", "x4","x5","x6","x7","x8","x9","x10","x11","x12","x13","x14","x15","x16"]
-    data.drop(["x3", "x7", "x8", "x9", "x10", "x11", "x12", "x13", "x14", "x15", "x16"], axis=1, inplace=True)
+    data.columns = ["x1", "x2", "x3", "x4","x5","x6","x7","x8","x9","x10","x11","x12"]
+    # data.drop(["x3", "x7", "x8", "x9", "x10", "x11", "x12", "x13", "x14", "x15", "x16"], axis=1, inplace=True)
     return data
 
 
@@ -48,29 +48,29 @@ def movingAvg(dataSet, winSize=5):
     return ma_data
 
 
-dataLeftMA = movingAvg(dataLeft, winSize = 5)
-dataRightMA = movingAvg(dataRight, winSize = 5)
-dataMidMA = movingAvg(dataMid, winSize = 5)
+dataLeft = movingAvg(dataLeft, winSize = 5)
+dataRight = movingAvg(dataRight, winSize = 5)
+dataMid = movingAvg(dataMid, winSize = 5)
 
 
-def featureExtaction(df):
-    result, header = [], []
-    for ind in range(sum(range(df.shape[1]))):
-        header.append("x{}".format(ind))
+# def featureExtaction(df):
+#     result, header = [], []
+#     for ind in range(sum(range(df.shape[1]))):
+#         header.append("x{}".format(ind))
     
-    for i in range(df.shape[0]):
-        temp = []
-        for j in range(len(df.iloc[i])-1):
-            for k in range(j+1, len(df.iloc[i])):
-                temp.append(df.iloc[i, j] - df.iloc[i, k])
-        result.append(temp)    
+#     for i in range(df.shape[0]):
+#         temp = []
+#         for j in range(len(df.iloc[i])-1):
+#             for k in range(j+1, len(df.iloc[i])):
+#                 temp.append(df.iloc[i, j] - df.iloc[i, k])
+#         result.append(temp)    
 
-    return pd.DataFrame(result, columns=header)
+#     return pd.DataFrame(result, columns=header)
 
 
-dataLeft = featureExtaction(dataLeftMA)
-dataRight = featureExtaction(dataRightMA)
-dataMid = featureExtaction(dataMidMA)
+# dataLeft = featureExtaction(dataLeftMA)
+# dataRight = featureExtaction(dataRightMA)
+# dataMid = featureExtaction(dataMidMA)
 
 
 
@@ -134,9 +134,9 @@ def normalizeTestDF(dataFrame, params, mode="std"):
 from sklearn import linear_model
 from sklearn import metrics, cross_validation
 print("start training")
-logreg = linear_model.LogisticRegression(C=1e1)
+logreg = linear_model.LogisticRegression(C=1e-1)
 logreg.fit(norm_data, com_label)
-predicted = cross_validation.cross_val_predict(logreg, norm_data, com_label, cv=10)
+predicted = cross_validation.cross_val_predict(logreg, norm_data, com_label, cv=100)
 
 
 def makePrediction(dirname, filename):
@@ -144,9 +144,9 @@ def makePrediction(dirname, filename):
     open(dirname+'prediction.lock', 'a').close()
     try:
         data = loadAndFormatData(dirname+filename)
-        data = removeOutliers(data)
+        # data = removeOutliers(data)
         dataMA = movingAvg(data,  winSize = 5)
-        data = featureExtaction(data)        
+        # data = featureExtaction(data)        
         dataNorm = normalizeTestDF(dataMA, params)
         with open(dirname+"prediction.txt", "a") as myfile:
             for i in range(dataNorm.shape[0]):
