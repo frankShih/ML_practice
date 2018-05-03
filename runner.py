@@ -142,8 +142,10 @@ def makePrediction(dirname, filename):
     print("making prediction")
     open(dirname+'prediction.lock', 'a').close()
     try:
-        data = loadAndFormatData(dirname+filename)    
+        data = loadAndFormatData(dirname+filename)
+        data = removeOutliers(data)
         dataMA = movingAvg(data,  winSize = 5)
+        data = featureExtaction(data)        
         dataNorm = normalizeTestDF(dataMA, params)
         with open(dirname+"prediction.txt", "a") as myfile:
             for i in range(dataNorm.shape[0]):
@@ -167,7 +169,7 @@ while True:
     print(os.path.exists('/sdcard/DCIM/logs/sonarLog.txt'), os.path.exists('/sdcard/DCIM/logs/sonarLog.lock'))
     if os.path.exists('/sdcard/DCIM/logs/sonarLog.txt') and not(os.path.exists('/sdcard/DCIM/logs/sonarLog.lock')):
         makePrediction('/sdcard/DCIM/logs/', 'sonarLog.txt')
-        time.sleep(0.2)
+        time.sleep(0.1)
     
         
 
