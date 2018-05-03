@@ -15,26 +15,6 @@ dataRight = loadAndFormatData('sonarLogR.txt')
 dataMid = loadAndFormatData('sonarLogM.txt')
 
 
-def featureExtaction(df):
-    result, header = [], []
-    for ind in range(sum(range(df.shape[1]))):
-        header.append("x{}".format(ind))
-    
-    for i in range(df.shape[0]):
-        temp = []
-        for j in range(len(df.iloc[i])-1):
-            for k in range(j+1, len(df.iloc[i])):
-                temp.append(df.iloc[i, j] - df.iloc[i, k])
-        result.append(temp)    
-
-    return pd.DataFrame(result, columns=header)
-
-
-dataLeft = featureExtaction(dataLeft)
-dataRight = featureExtaction(dataRight)
-dataMid = featureExtaction(dataMid)
-
-
 def removeOutliers(dataFrame):
     print("remove outliers")
     d_mean = dataFrame.mean()
@@ -73,6 +53,27 @@ dataRightMA = movingAvg(dataRight, winSize = 5)
 dataMidMA = movingAvg(dataMid, winSize = 5)
 
 
+def featureExtaction(df):
+    result, header = [], []
+    for ind in range(sum(range(df.shape[1]))):
+        header.append("x{}".format(ind))
+    
+    for i in range(df.shape[0]):
+        temp = []
+        for j in range(len(df.iloc[i])-1):
+            for k in range(j+1, len(df.iloc[i])):
+                temp.append(df.iloc[i, j] - df.iloc[i, k])
+        result.append(temp)    
+
+    return pd.DataFrame(result, columns=header)
+
+
+dataLeft = featureExtaction(dataLeftMA)
+dataRight = featureExtaction(dataRightMA)
+dataMid = featureExtaction(dataMidMA)
+
+
+
 def labelAndCombineData(df_list):
     print("labelAndCombineData")
     data_list = []
@@ -86,7 +87,7 @@ def labelAndCombineData(df_list):
     return pd.concat(data_list, axis=0), pd.concat(label_list, axis=0)
 
 
-com_data, com_label = labelAndCombineData([dataLeftMA, dataRightMA, dataMid])
+com_data, com_label = labelAndCombineData([dataLeft, dataRight, dataMid])
 
 
 
