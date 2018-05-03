@@ -10,12 +10,29 @@ def loadAndFormatData(filename):
     return data
 
 
-# dataLeftMost = loadAndFormatData('sonarLogLeftMost.txt')
 dataLeft = loadAndFormatData('sonarLogL.txt')
-# dataRightMost = loadAndFormatData('sonarLogRightMost.txt')
 dataRight = loadAndFormatData('sonarLogR.txt')
 dataMid = loadAndFormatData('sonarLogM.txt')
 
+
+def featureExtaction(df):
+    result, header = [], []
+    for ind in range(sum(range(df.shape[1]))):
+        header.append("x{}".format(ind))
+    
+    for i in range(df.shape[0]):
+        temp = []
+        for j in range(len(df.iloc[i])-1):
+            for k in range(j+1, len(df.iloc[i])):
+                temp.append(df.iloc[i, j] - df.iloc[i, k])
+        result.append(temp)    
+
+    return pd.DataFrame(result, columns=header)
+
+
+dataLeft = featureExtaction(dataLeft)
+dataRight = featureExtaction(dataRight)
+dataMid = featureExtaction(dataMid)
 
 
 def removeOutliers(dataFrame):
@@ -34,12 +51,9 @@ def removeOutliers(dataFrame):
     return result
 
 
-# dataLeftMost = removeOutliers(dataLeftMost)
 dataLeft = removeOutliers(dataLeft)
-# dataRightMost = removeOutliers(dataRightMost)
 dataRight = removeOutliers(dataRight)
 dataMid = removeOutliers(dataMid)
-
 
 
 def movingAvg(dataSet, winSize=5):
@@ -54,12 +68,9 @@ def movingAvg(dataSet, winSize=5):
     return ma_data
 
 
-# dataLeftMostMA = movingAvg(dataLeftMost,  winSize = 5)
 dataLeftMA = movingAvg(dataLeft, winSize = 5)
-# dataRightMostMA = movingAvg(dataRightMost, winSize = 5)
 dataRightMA = movingAvg(dataRight, winSize = 5)
 dataMidMA = movingAvg(dataMid, winSize = 5)
-
 
 
 def labelAndCombineData(df_list):
@@ -74,11 +85,11 @@ def labelAndCombineData(df_list):
     
     return pd.concat(data_list, axis=0), pd.concat(label_list, axis=0)
 
+
 com_data, com_label = labelAndCombineData([dataLeftMA, dataRightMA, dataMid])
 
 
 
-# feature normalization
 def normalizeTrainDF(dataFrame, mode="std"):
     print("normalize train df")
     result = dataFrame.copy()    
@@ -98,9 +109,9 @@ def normalizeTrainDF(dataFrame, mode="std"):
             result[feature_name] = ((dataFrame[feature_name] - min_value) / (max_value - min_value)) if (max_value - min_value) else 0
 
     return result, params
+
         
 norm_data, params = normalizeTrainDF(com_data)
-print(norm_data.head(), params["std"][0])
 
 
 def normalizeTestDF(dataFrame, params, mode="std"):
