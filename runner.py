@@ -10,9 +10,17 @@ def loadAndFormatData(filename):
     return data
 
 
+
 dataLeft = loadAndFormatData('sonarLogL.txt')
+dataLeft1 = loadAndFormatData('sonarLogL1.txt')
 dataRight = loadAndFormatData('sonarLogR.txt')
+dataRight1 = loadAndFormatData('sonarLogR1.txt')
 dataMid = loadAndFormatData('sonarLogM.txt')
+dataMid1 = loadAndFormatData('sonarLogM1.txt')
+
+dataLeft = pd.concat([dataLeft, dataLeft1], axis=0)
+dataRight = pd.concat([dataRight, dataRight1], axis=0)
+dataMid = pd.concat([dataMid, dataMid1], axis=0)
 
 
 def removeOutliers(dataFrame):
@@ -130,7 +138,7 @@ def normalizeTestDF(dataFrame, params, mode="std"):
 
     return result
 
-
+'''
 from sklearn import linear_model
 from sklearn import metrics, cross_validation
 print("start training")
@@ -171,7 +179,33 @@ while True:
     if os.path.exists('/sdcard/DCIM/logs/sonarLog.txt') and not(os.path.exists('/sdcard/DCIM/logs/sonarLog.lock')):
         makePrediction('/sdcard/DCIM/logs/', 'sonarLog.txt')
         time.sleep(0.1)
-    
+'''    
         
+# dimension reduction
+from sklearn.decomposition import PCA 
+pca=PCA(n_components=3, copy=True, whiten=False)
+reduced_data = pca.fit_transform(norm_data)
+print(pca.components_, pca.n_components_, pca.explained_variance_ratio_, pca.mean_, pca.noise_variance_)
 
 
+
+import matplotlib.pyplot as plt
+import ipympl
+from mpl_toolkits.mplot3d import Axes3D
+
+
+
+
+fig = plt.figure()
+ax = fig.add_subplot(111, projection='3d')
+
+ax.scatter(reduced_data[com_label==0, 0], reduced_data[com_label==0, 1], reduced_data[com_label==0, 2:], c='r', marker='o')
+ax.scatter(reduced_data[com_label==1, 0], reduced_data[com_label==1, 1], reduced_data[com_label==1, 2:], c='b', marker='o')
+ax.scatter(reduced_data[com_label==2, 0], reduced_data[com_label==2, 1], reduced_data[com_label==2, 2:], c='g', marker='o')
+# ax.scatter(reduced_data[com_label==3, 0], reduced_data[com_label==3, 1], reduced_data[com_label==3, 2:], c='c', marker='o')
+# ax.scatter(reduced_data[com_label==4, 0], reduced_data[com_label==4, 1], reduced_data[com_label==4, 2:], c='m', marker='o')
+ax.set_xlabel('X Label')
+ax.set_ylabel('Y Label')
+ax.set_zlabel('Z Label')
+
+plt.show()
