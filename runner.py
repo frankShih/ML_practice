@@ -13,14 +13,17 @@ def loadAndFormatData(filename):
 
 dataLeft = loadAndFormatData('sonarLogL.txt')
 dataLeft1 = loadAndFormatData('sonarLogL1.txt')
+dataLeft2 = loadAndFormatData('sonarLogL2.txt')
 dataRight = loadAndFormatData('sonarLogR.txt')
 dataRight1 = loadAndFormatData('sonarLogR1.txt')
+dataRight2 = loadAndFormatData('sonarLogR2.txt')
 dataMid = loadAndFormatData('sonarLogM.txt')
 dataMid1 = loadAndFormatData('sonarLogM1.txt')
+dataMid2 = loadAndFormatData('sonarLogM2.txt')
 
-dataLeft = pd.concat([dataLeft, dataLeft1], axis=0)
-dataRight = pd.concat([dataRight, dataRight1], axis=0)
-dataMid = pd.concat([dataMid, dataMid1], axis=0)
+dataLeft = pd.concat([dataLeft, dataLeft1, dataLeft2], axis=0)
+dataRight = pd.concat([dataRight, dataRight1, dataRight2], axis=0)
+dataMid = pd.concat([dataMid, dataMid1, dataMid2], axis=0)
 
 
 def removeOutliers(dataFrame):
@@ -138,13 +141,13 @@ def normalizeTestDF(dataFrame, params, mode="std"):
 
     return result
 
-'''
+
 from sklearn import linear_model
 from sklearn import metrics, cross_validation
 print("start training")
 logreg = linear_model.LogisticRegression(C=1e-1)
 logreg.fit(norm_data, com_label)
-predicted = cross_validation.cross_val_predict(logreg, norm_data, com_label, cv=100)
+# predicted = cross_validation.cross_val_predict(logreg, norm_data, com_label, cv=100)
 
 
 def makePrediction(dirname, filename):
@@ -209,3 +212,4 @@ ax.set_ylabel('Y Label')
 ax.set_zlabel('Z Label')
 
 plt.show()
+'''
