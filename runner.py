@@ -55,7 +55,7 @@ def movingAvg(dataSet, winSize=5):
 
     ma_data.dropna(inplace=True)
     ma_data.reset_index(drop=True, inplace=True)
-    print(ma_data.head(10), ma_data.shape)    
+    # print(ma_data.head(10), ma_data.shape)    
     return ma_data
 
 
@@ -64,24 +64,26 @@ dataRight = movingAvg(dataRight, winSize = 5)
 dataMid = movingAvg(dataMid, winSize = 5)
 
 
-# def featureExtaction(df):
-#     result, header = [], []
-#     for ind in range(sum(range(df.shape[1]))):
-#         header.append("x{}".format(ind))
+def featureExtaction(df):
+	print("extract features")
+    result, header = [], []
+        
+    for i in range(df.shape[0]):
+        temp = []
+        for j in range(len(df.iloc[i])-1):
+            for k in range(j+1, len(df.iloc[i])):
+                temp.append(df.iloc[i, j] / df.iloc[i, k])
+        result.append(temp)    
     
-#     for i in range(df.shape[0]):
-#         temp = []
-#         for j in range(len(df.iloc[i])-1):
-#             for k in range(j+1, len(df.iloc[i])):
-#                 temp.append(df.iloc[i, j] - df.iloc[i, k])
-#         result.append(temp)    
-
-#     return pd.DataFrame(result, columns=header)
+    for ind in range(len(temp)):
+        header.append("x{}".format(1+ind))
+    
+    return pd.DataFrame(result, columns=header)
 
 
-# dataLeft = featureExtaction(dataLeftMA)
-# dataRight = featureExtaction(dataRightMA)
-# dataMid = featureExtaction(dataMidMA)
+dataLeft = featureExtaction(dataLeft)
+dataRight = featureExtaction(dataRight)
+dataMid = featureExtaction(dataMid)
 
 
 
@@ -142,23 +144,24 @@ def normalizeTestDF(dataFrame, params, mode="std"):
     return result
 
 
+
 from sklearn import linear_model
 from sklearn import metrics, cross_validation
 print("start training")
 logreg = linear_model.LogisticRegression(C=1e-1)
 logreg.fit(norm_data, com_label)
 # predicted = cross_validation.cross_val_predict(logreg, norm_data, com_label, cv=100)
-
+print("waiting for data input ...")
 
 def makePrediction(dirname, filename):
     print("making prediction")
     open(dirname+'prediction.lock', 'a').close()
     try:
         data = loadAndFormatData(dirname+filename)
-        # data = removeOutliers(data)
-        dataMA = movingAvg(data,  winSize = 5)
-        # data = featureExtaction(data)        
-        dataNorm = normalizeTestDF(dataMA, params)
+        data = removeOutliers(data)
+        data = movingAvg(data,  winSize = 5)
+        data = featureExtaction(data)        
+        dataNorm = normalizeTestDF(data, params)
         with open(dirname+"prediction.txt", "a") as myfile:
             for i in range(dataNorm.shape[0]):
                 current = dataNorm.iloc[i].reshape(1, -1)
@@ -178,7 +181,7 @@ import os.path
 import time
 
 while True:
-    print(os.path.exists('/sdcard/DCIM/logs/sonarLog.txt'), os.path.exists('/sdcard/DCIM/logs/sonarLog.lock'))
+    # print(os.path.exists('/sdcard/DCIM/logs/sonarLog.txt'), os.path.exists('/sdcard/DCIM/logs/sonarLog.lock'))
     if os.path.exists('/sdcard/DCIM/logs/sonarLog.txt') and not(os.path.exists('/sdcard/DCIM/logs/sonarLog.lock')):
         makePrediction('/sdcard/DCIM/logs/', 'sonarLog.txt')
         time.sleep(0.1)
