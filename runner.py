@@ -137,7 +137,7 @@ def makePrediction(dirname, filename):
         with open(dirname+"prediction.txt", "a") as myfile:
             for i in range(dataNorm.shape[0]):
                 current = dataNorm.iloc[i].reshape(1, -1)
-                #print(current, str(logreg.predict(current)[0]))
+                print(logreg.predict(current)[0])
                 myfile.write(str(logreg.predict(current)[0]))
     except (OSError, IOError, pd.io.common.EmptyDataError) as e:
         print(e)
@@ -156,9 +156,8 @@ while True:
     print(os.path.exists('/sdcard/DCIM/logs/sonarLog.txt'), os.path.exists('/sdcard/DCIM/logs/sonarLog.lock'))
     if os.path.exists('/sdcard/DCIM/logs/sonarLog.txt') and not(os.path.exists('/sdcard/DCIM/logs/sonarLog.lock')):
         makePrediction('/sdcard/DCIM/logs/', 'sonarLog.txt')
-    else:
-        print("file not found ~~~")
-        time.sleep(0.1)
+        time.sleep(0.2)
+    
         
 
 
